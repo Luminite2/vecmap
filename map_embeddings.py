@@ -21,13 +21,13 @@ import numpy as np
 import re
 import sys
 import time
+import ortho
 
 
 # Maximum dimensions for the similarity matrix computation in memory
 # A MAX_DIM_X * MAX_DIM_Z dimensional matrix will be used
 MAX_DIM_X = 10000
 MAX_DIM_Z = 10000
-
 
 def main():
     # Parse command line arguments
@@ -47,6 +47,8 @@ def main():
     self_learning_group.add_argument('--self_learning', action='store_true', help='enable self-learning')
     self_learning_group.add_argument('--direction', choices=['forward', 'backward', 'union'], default='forward', help='the direction for dictionary induction (defaults to forward)')
     self_learning_group.add_argument('--numerals', action='store_true', help='use latin numerals (i.e. words matching [0-9]+) as the seed dictionary')
+    self_learning_group.add_argument('--orthographic_dict', action='store_true', help='use lowest edit distance as seed dictionary')
+    self_learning_group.add_argument('--orthographic_learn', default=0, type=int, help='use character n-gram information during learning')
     self_learning_group.add_argument('--threshold', default=0.000001, type=float, help='the convergence threshold (defaults to 0.000001)')
     self_learning_group.add_argument('--validation', default=None, help='a dictionary file for validation at each iteration')
     self_learning_group.add_argument('--log', help='write to a log file in tsv format at each iteration')
@@ -56,8 +58,15 @@ def main():
     # Read input embeddings
     srcfile = open(args.src_input, encoding=args.encoding, errors='surrogateescape')
     trgfile = open(args.trg_input, encoding=args.encoding, errors='surrogateescape')
-    src_words, x = embeddings.read(srcfile)
-    trg_words, z = embeddings.read(trgfile)
+    src_words = None
+    x = None
+    trg_words = None
+    z = None
+    if args.orthographic_learn:
+      (src_words, x), (trg_words, z) = embeddings.orthoread(srcfile, trgfile, args.orthographic_learn)
+    else:
+      src_words, x = embeddings.read(srcfile)
+      trg_words, z = embeddings.read(trgfile)
 
     # Build word to index map
     src_word2ind = {word: i for i, word in enumerate(src_words)}
@@ -76,6 +85,22 @@ def main():
         for word in numerals:
             src_indices.append(src_word2ind[word])
             trg_indices.append(trg_word2ind[word])
+    elif args.orthographic_dict:
+        src_words_subset = src_words[:10]
+        trg_words_subset = trg_words[:10]
+        if args.dictionary != sys.stdin.fileno():
+            print('WARNING: Using edit distance instead of the training dictionary', file=sys.stderr)
+        #for each src_word, find best trg_word
+        for src_word in src_words_subset:
+            dist = None
+            best_trg = None
+            for trg_word in trg_words_subset:
+                this_dist = editDist(src_word, trg_word)
+                if dist == None or this_dist < dist:
+                    dist = this_dist
+                    best_trg = trg_word
+            src_indices.append(src_word2ind[src_word])
+            trg_indices.append(trg_word2ind[best_trg])
     else:
         f = open(args.dictionary, encoding=args.encoding, errors='surrogateescape')
         for line in f:

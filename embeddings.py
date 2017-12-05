@@ -32,6 +32,43 @@ def read(file, threshold=0, vocabulary=None):
             matrix.append(np.fromstring(vec, sep=' '))
     return (words, matrix) if vocabulary is None else (words, np.array(matrix))
 
+def orthoread(efile, ffile, n=1, threshold=0):
+
+  def charmap(ewords, fwords, n=1):
+    def ngrammer(n):
+      return lambda w: [w[index:index+n] for index in range(len(w)-n+1)]
+    c2i = {}
+    i = 0
+    ngrams = ngrammer(n)
+    for w in ewords+fwords:
+      #for cs in [w[index:index+n] for index in range(len(w)-n+1)]:
+      for cs in ngrams(w):
+        if cs in c2i:
+          continue
+        else:
+          c2i[cs] = i
+          i += 1
+    return c2i, i, ngrams
+  
+  def orthoextend(words, matrix, c2i, alphSize, ngrams, scaleConst=8):
+    exts = []
+    for i, w in enumerate(words):
+      ext = np.zeros(alphSize)
+      for cs in ngrams(w):
+        ext[c2i[cs]] += 1
+      ext /= scaleConst
+      exts.append(ext)
+    matrix = np.append(matrix, exts, 1)
+    matrix = matrix / np.linalg.norm(matrix, axis=1, keepdims=True)
+    return matrix
+
+  ewords, ematrix = read(efile, threshold)
+  fwords, fmatrix = read(ffile, threshold)
+  c2i, alphSize, ngrams = charmap(ewords, fwords, n)
+  ematrix = orthoextend(ewords, ematrix, c2i, alphSize, ngrams)
+  fmatrix = orthoextend(fwords, fmatrix, c2i, alphSize, ngrams)
+
+  return (ewords, ematrix), (fwords, fmatrix)
 
 def write(words, matrix, file):
     print('%d %d' % matrix.shape, file=file)
