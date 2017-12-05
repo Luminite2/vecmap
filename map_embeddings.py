@@ -178,7 +178,7 @@ def main():
             trg_indices_backward = range(z.shape[0])
             for i in range(0, x.shape[0], MAX_DIM_X):
                 for j in range(0, z.shape[0], MAX_DIM_Z):
-                    sim = xw[i:i+MAX_DIM_X].dot(z[j:j+MAX_DIM_Z].T)
+                    sim = xw[i:i+MAX_DIM_X].dot(z[j:j+MAX_DIM_Z].T) #TODO: add similarity score
                     for k in range(sim.shape[0]):
                         l = sim[k].argmax()
                         if sim[k, l] > best_sim_forward[i+k]:

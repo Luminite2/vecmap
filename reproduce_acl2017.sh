@@ -41,7 +41,8 @@ SIMILARITY_DATASET_COUNT=2
 SIMILARITY_DATASET_IDS=('mws353' 'rg65')
 SIMILARITY_DATASET_NAMES=('MWS353' 'RG65')
 
-for ((i = 0; i < $LANGUAGE_COUNT; i++))
+#for ((i = 0; i < $LANGUAGE_COUNT; i++))
+for ((i = 0; i < 1; i++))
 do
     src=${LANGUAGE_SRCS[$i]}
     trg=${LANGUAGE_TRGS[$i]}
