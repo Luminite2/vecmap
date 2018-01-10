@@ -33,6 +33,11 @@ def editDist(w1,w2):
 
     return float(D[l1][l2]) / float(denom)
 
+def similarity(w1,w2):
+  import math
+  ed = editDist(w1,w2)
+  return math.log(2.0-ed)
+
 def allDeletesUpToK(word, k):
   l = []
   for i in range(k+1):
@@ -147,19 +152,48 @@ def clean(fname):
           fout.write(line)
         i += 1
 
-def makeSimilarityMatrix():
-  srcs, _, trgs, _ = getEmbeds()
+def save_sparse_csr(fname, array):
+  import numpy as np
+  np.savez(fname, data = array.data, indices = array.indices, indptr = array.indptr, shape = array.shape)
+
+def load_sparse_csr(fname='en-it_simMatrix_1.npz'):
+  import numpy as np
+  from scipy.sparse import csr_matrix
+  loader = np.load(fname)
+  return csr_matrix((loader['data'], loader['indices'], loader['indptr']), shape = loader['shape'])
+
+def vocabWIndices():
+  srcs, x, trgs, z = getEmbeds()
+  src_word2ind = {word: i for i, word in enumerate(srcs)}
+  trg_word2ind = {word: i for i, word in enumerate(trgs)}
+  return srcs, x, trgs, z, src_word2ind, trg_word2ind
+
+def similarityMatrix():
+  import numpy as np
+  import tables
+  from scipy.sparse import lil_matrix
+  from scipy.sparse import csr_matrix
+
+  #fpath = "en-it_simMatrix.hdf5"
   k = 1
+  fpath = "en-it_simMatrix_{}.npz".format(k)
+  #hdf5file = tables.openFile(fpath, mode='w')
+  srcs, _, trgs, _, src_word2ind, trg_word2ind = vocabWIndices()
+  #simmat = np.zeros((len(srcs),len(trgs)))
+  #simmat = np.memmap(fpath, mode='w', shape=(len(srcs),len(trgs)))
+  simmat = lil_matrix((len(srcs),len(trgs)), dtype='float64')
   trgmap = lexDeleteAugment(trgs,k)
   for w in srcs:
+    #simrow = np.zeros(len(trgs))
     if len(w) > 30:
       continue
     for cand in matches(trgmap,w,k):
-      ed = editDist(w,cand)
-      pass
-
-
-  pass
+      sim = similarity(w,cand)
+      simmat[src_word2ind[w],trg_word2ind[cand]] = sim
+      #simrow[trg_word2ind[cand]] = sim
+  #scipy.sparse.save_npz(fpath, simmat)
+  save_sparse_csr(fpath, simmat.tocsr())
+  #return simmat
   #TODO: using symmetric bizzle wizzle, record ALL scores
   #put it in numpy array, make sure dimensions line up with embeddings
 
@@ -169,7 +203,8 @@ def makeSimilarityMatrix():
   #return matrix
 
 def main():
-  pass
+  similarityMatrix()
+  #simmat.dump("en-it_simMatrix.pkl")
 
 if __name__ == "__main__":
   main()

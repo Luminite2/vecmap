@@ -50,7 +50,7 @@ def orthoread(efile, ffile, n=1, threshold=0):
           i += 1
     return c2i, i, ngrams
   
-  def orthoextend(words, matrix, c2i, alphSize, ngrams, scaleConst=8):
+  def orthoextend(words, matrix, c2i, alphSize, ngrams, scaleConst=6):
     exts = []
     for i, w in enumerate(words):
       ext = np.zeros(alphSize)
@@ -96,3 +96,10 @@ def length_normalize_dimensionwise(matrix):
 def mean_center_embeddingwise(matrix):
     avg = np.mean(matrix, axis=1)
     return matrix - avg[:, np.newaxis]
+
+def debugDictCheck():
+  with open('data/embeddings/unit-center/en.emb.txt', encoding='utf-8',errors='surrogateescape') as e:
+    ewords, _ = read(e)
+  with open('data/embeddings/unit-center/it.emb.txt', encoding='utf-8',errors='surrogateescape') as i:
+    iwords, _ = read(i)
+  return ewords, iwords

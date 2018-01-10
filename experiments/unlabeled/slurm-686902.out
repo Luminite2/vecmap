@@ -1,0 +1,28 @@
+Beginning!
+Read source embeddings, time: 14.321273565292358
+Read target embeddings, time: 14.083057641983032
+Augmenting target!
+Augmented target in time: 64.22274446487427
+Processing source word 0
+Processing source word 5000
+Processing source word 10000
+Processing source word 15000
+Processing source word 20000
+Processing source word 25000
+Processing source word 30000
+Processing source word 35000
+Processing source word 40000
+Processing source word 45000
+Processing source word 50000
+Processing source word 55000
+Processing source word 60000
+Processing source word 65000
+Processing source word 70000
+Processing source word 75000
+Processing source word 80000
+Processing source word 85000
+Processing source word 90000
+Processing source word 95000
+Processing source word 100000
+slurmstepd: error: *** JOB 686902 ON bhc0079 CANCELLED AT 2017-10-29T18:23:19 DUE TO TIME LIMIT ***
+/var/spool/slurm/job686902/slurm_script: line 5: 13966 Terminated              ./$1

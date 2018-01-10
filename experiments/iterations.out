@@ -1,0 +1,336 @@
+--------------------------------------------------------------------------------
+ENGLISH-ITALIAN
+--------------------------------------------------------------------------------
+NUMERAL DICTIONARY
+  - Mikolov et al. (2013a)  |  Translation:  0.00%  MWS353: 28.75%
+  - Xing et al. (2015)      |  Translation:  0.13%  MWS353: 27.75%
+  - Zhang et al. (2016)     |  Translation:  0.27%  MWS353: 27.38%
+  - Artetxe et al. (2016)   |  Translation:  0.40%  MWS353: 24.85%
+
+ITERATION 1 (1209.44s)
+	- Objective:          27.1489%
+
+ITERATION 2 (1213.54s)
+	- Objective:          34.0805%
+
+ITERATION 3 (1213.44s)
+	- Objective:          38.7853%
+
+ITERATION 4 (1214.17s)
+	- Objective:          41.7240%
+
+ITERATION 5 (1214.37s)
+	- Objective:          43.7552%
+
+ITERATION 6 (1212.64s)
+	- Objective:          44.9410%
+
+ITERATION 7 (1212.17s)
+	- Objective:          45.4766%
+
+ITERATION 8 (1212.30s)
+	- Objective:          45.6947%
+
+ITERATION 9 (1212.42s)
+	- Objective:          45.7996%
+
+ITERATION 10 (1214.07s)
+	- Objective:          45.8600%
+
+ITERATION 11 (1213.60s)
+	- Objective:          45.9108%
+
+ITERATION 12 (1214.58s)
+	- Objective:          45.9628%
+
+ITERATION 13 (1212.47s)
+	- Objective:          45.9864%
+
+ITERATION 14 (1213.75s)
+	- Objective:          46.0029%
+
+ITERATION 15 (1212.97s)
+	- Objective:          46.0151%
+
+ITERATION 16 (1212.29s)
+	- Objective:          46.0242%
+
+ITERATION 17 (1213.53s)
+	- Objective:          46.0324%
+
+ITERATION 18 (1213.74s)
+	- Objective:          46.0421%
+
+ITERATION 19 (1213.05s)
+	- Objective:          46.0525%
+
+ITERATION 20 (1212.46s)
+	- Objective:          46.0592%
+
+ITERATION 21 (1212.39s)
+	- Objective:          46.0637%
+
+ITERATION 22 (1212.77s)
+	- Objective:          46.0673%
+
+ITERATION 23 (1213.11s)
+	- Objective:          46.0708%
+
+ITERATION 24 (1212.34s)
+	- Objective:          46.0743%
+
+ITERATION 25 (1212.41s)
+	- Objective:          46.0776%
+
+ITERATION 26 (1212.71s)
+	- Objective:          46.0805%
+
+ITERATION 27 (1213.26s)
+	- Objective:          46.0825%
+
+ITERATION 28 (1212.87s)
+	- Objective:          46.0840%
+
+ITERATION 29 (1213.11s)
+	- Objective:          46.0853%
+
+ITERATION 30 (1214.40s)
+	- Objective:          46.0862%
+
+ITERATION 31 (1213.05s)
+	- Objective:          46.0871%
+
+ITERATION 32 (1213.60s)
+	- Objective:          46.0877%
+
+ITERATION 33 (1213.30s)
+	- Objective:          46.0884%
+
+ITERATION 34 (1213.54s)
+	- Objective:          46.0889%
+
+ITERATION 35 (1212.88s)
+	- Objective:          46.0893%
+
+ITERATION 36 (1213.51s)
+	- Objective:          46.0897%
+
+ITERATION 37 (1213.88s)
+	- Objective:          46.0900%
+
+ITERATION 38 (1214.80s)
+	- Objective:          46.0902%
+
+ITERATION 39 (1214.18s)
+	- Objective:          46.0904%
+
+ITERATION 40 (1214.06s)
+	- Objective:          46.0906%
+
+ITERATION 41 (1213.87s)
+	- Objective:          46.0908%
+
+ITERATION 42 (1214.80s)
+	- Objective:          46.0910%
+
+ITERATION 43 (1215.15s)
+	- Objective:          46.0911%
+
+ITERATION 44 (1213.53s)
+	- Objective:          46.0913%
+
+ITERATION 45 (1212.29s)
+	- Objective:          46.0914%
+
+ITERATION 46 (1212.76s)
+	- Objective:          46.0915%
+
+ITERATION 47 (1212.46s)
+	- Objective:          46.0917%
+
+ITERATION 48 (1213.81s)
+	- Objective:          46.0918%
+
+ITERATION 49 (1213.67s)
+	- Objective:          46.0918%
+  - Proposed method         |  Translation: 39.40%  MWS353: 62.82%
+ORTHOGRAPHIC DICTIONARY
+WARNING: OOV dictionary entry (said: - said)
+WARNING: OOV dictionary entry (by: - by)
+WARNING: OOV dictionary entry (to: - to)
+WARNING: OOV dictionary entry (on: - on)
+WARNING: OOV dictionary entry (email: - email)
+WARNING: OOV dictionary entry (from: - from)
+WARNING: OOV dictionary entry ((pdf - pdf)
+  - Mikolov et al. (2013a)  |  Translation:  0.33%  MWS353: 49.44%
+WARNING: OOV dictionary entry (said: - said)
+WARNING: OOV dictionary entry (by: - by)
+WARNING: OOV dictionary entry (to: - to)
+WARNING: OOV dictionary entry (on: - on)
+WARNING: OOV dictionary entry (email: - email)
+WARNING: OOV dictionary entry (from: - from)
+WARNING: OOV dictionary entry ((pdf - pdf)
+  - Xing et al. (2015)      |  Translation: 30.87%  MWS353: 61.02%
+WARNING: OOV dictionary entry (said: - said)
+WARNING: OOV dictionary entry (by: - by)
+WARNING: OOV dictionary entry (to: - to)
+WARNING: OOV dictionary entry (on: - on)
+WARNING: OOV dictionary entry (email: - email)
+WARNING: OOV dictionary entry (from: - from)
+WARNING: OOV dictionary entry ((pdf - pdf)
+  - Zhang et al. (2016)     |  Translation: 31.47%  MWS353: 60.77%
+WARNING: OOV dictionary entry (said: - said)
+WARNING: OOV dictionary entry (by: - by)
+WARNING: OOV dictionary entry (to: - to)
+WARNING: OOV dictionary entry (on: - on)
+WARNING: OOV dictionary entry (email: - email)
+WARNING: OOV dictionary entry (from: - from)
+WARNING: OOV dictionary entry ((pdf - pdf)
+  - Artetxe et al. (2016)   |  Translation: 33.40%  MWS353: 62.73%
+WARNING: OOV dictionary entry (said: - said)
+WARNING: OOV dictionary entry (by: - by)
+WARNING: OOV dictionary entry (to: - to)
+WARNING: OOV dictionary entry (on: - on)
+WARNING: OOV dictionary entry (email: - email)
+WARNING: OOV dictionary entry (from: - from)
+WARNING: OOV dictionary entry ((pdf - pdf)
+
+ITERATION 1 (1212.90s)
+	- Objective:          41.0905%
+
+ITERATION 2 (1213.48s)
+	- Objective:          44.0892%
+
+ITERATION 3 (1213.45s)
+	- Objective:          44.9233%
+
+ITERATION 4 (1213.56s)
+	- Objective:          45.2879%
+
+ITERATION 5 (1214.09s)
+	- Objective:          45.5199%
+
+ITERATION 6 (1213.96s)
+	- Objective:          45.6781%
+
+ITERATION 7 (1213.69s)
+	- Objective:          45.7862%
+
+ITERATION 8 (1212.07s)
+	- Objective:          45.8648%
+
+ITERATION 9 (1212.10s)
+	- Objective:          45.9241%
+
+ITERATION 10 (1212.76s)
+	- Objective:          45.9608%
+
+ITERATION 11 (1211.59s)
+	- Objective:          45.9847%
+
+ITERATION 12 (1212.58s)
+	- Objective:          45.9998%
+
+ITERATION 13 (1212.55s)
+	- Objective:          46.0101%
+
+ITERATION 14 (1213.15s)
+	- Objective:          46.0173%
+
+ITERATION 15 (1213.36s)
+	- Objective:          46.0230%
+
+ITERATION 16 (1212.97s)
+	- Objective:          46.0277%
+
+ITERATION 17 (1213.82s)
+	- Objective:          46.0313%
+
+ITERATION 18 (1213.83s)
+	- Objective:          46.0341%
+
+ITERATION 19 (1213.95s)
+	- Objective:          46.0364%
+
+ITERATION 20 (1212.87s)
+	- Objective:          46.0384%
+
+ITERATION 21 (1213.65s)
+	- Objective:          46.0401%
+
+ITERATION 22 (1212.93s)
+	- Objective:          46.0416%
+
+ITERATION 23 (1212.16s)
+	- Objective:          46.0428%
+
+ITERATION 24 (1213.06s)
+	- Objective:          46.0440%
+
+ITERATION 25 (1213.87s)
+	- Objective:          46.0456%
+
+ITERATION 26 (1213.77s)
+	- Objective:          46.0488%
+
+ITERATION 27 (1214.09s)
+	- Objective:          46.0564%
+
+ITERATION 28 (1213.42s)
+	- Objective:          46.0671%
+
+ITERATION 29 (1212.87s)
+	- Objective:          46.0757%
+
+ITERATION 30 (1212.17s)
+	- Objective:          46.0821%
+
+ITERATION 31 (1212.81s)
+	- Objective:          46.0866%
+
+ITERATION 32 (1213.93s)
+	- Objective:          46.0895%
+
+ITERATION 33 (1213.88s)
+	- Objective:          46.0913%
+
+ITERATION 34 (1214.19s)
+	- Objective:          46.0926%
+
+ITERATION 35 (1213.01s)
+	- Objective:          46.0937%
+
+ITERATION 36 (1212.47s)
+	- Objective:          46.0944%
+
+ITERATION 37 (1213.33s)
+	- Objective:          46.0950%
+
+ITERATION 38 (1214.90s)
+	- Objective:          46.0954%
+
+ITERATION 39 (1214.14s)
+	- Objective:          46.0957%
+
+ITERATION 40 (1212.80s)
+	- Objective:          46.0959%
+
+ITERATION 41 (1212.75s)
+	- Objective:          46.0961%
+
+ITERATION 42 (1211.90s)
+	- Objective:          46.0963%
+
+ITERATION 43 (1212.19s)
+	- Objective:          46.0965%
+
+ITERATION 44 (1212.36s)
+	- Objective:          46.0966%
+
+ITERATION 45 (1211.32s)
+	- Objective:          46.0967%
+
+ITERATION 46 (1211.17s)
+	- Objective:          46.0968%
+  - Proposed method         |  Translation: 39.13%  MWS353: 62.17%
+

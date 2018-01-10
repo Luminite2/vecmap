@@ -49,6 +49,7 @@ def main():
     self_learning_group.add_argument('--numerals', action='store_true', help='use latin numerals (i.e. words matching [0-9]+) as the seed dictionary')
     self_learning_group.add_argument('--orthographic_dict', action='store_true', help='use lowest edit distance as seed dictionary')
     self_learning_group.add_argument('--orthographic_learn', default=0, type=int, help='use character n-gram information during learning')
+    self_learning_group.add_argument('--orthographic_sim', action='store_true', help='use edit distance when calculating similarity')
     self_learning_group.add_argument('--threshold', default=0.000001, type=float, help='the convergence threshold (defaults to 0.000001)')
     self_learning_group.add_argument('--validation', default=None, help='a dictionary file for validation at each iteration')
     self_learning_group.add_argument('--log', help='write to a log file in tsv format at each iteration')
@@ -154,6 +155,11 @@ def main():
     # Training loop
     prev_objective = objective = -100.
     it = 1
+    ortho_sim = None
+    ortho_sim_scale = 4
+    if args.orthographic_sim:
+      ortho_sim = ortho.load_sparse_csr() #TODO: generalize
+
     t = time.time()
     while it == 1 or objective - prev_objective >= args.threshold:
 
@@ -179,6 +185,9 @@ def main():
             for i in range(0, x.shape[0], MAX_DIM_X):
                 for j in range(0, z.shape[0], MAX_DIM_Z):
                     sim = xw[i:i+MAX_DIM_X].dot(z[j:j+MAX_DIM_Z].T) #TODO: add similarity score
+                    if args.orthographic_sim:
+                      sim += (ortho_sim[i:i+MAX_DIM_X,j:j+MAX_DIM_Z].toarray()) / ortho_sim_scale
+
                     for k in range(sim.shape[0]):
                         l = sim[k].argmax()
                         if sim[k, l] > best_sim_forward[i+k]:

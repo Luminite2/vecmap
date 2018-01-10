@@ -1,0 +1,22 @@
+--------------------------------------------------------------------------------
+ENGLISH-ITALIAN
+--------------------------------------------------------------------------------
+5,000 WORD DICTIONARY
+  - Mikolov et al. (2013a)  |  Translation: 34.93%  MWS353: 62.66%
+  - Xing et al. (2015)      |  Translation: 36.87%  MWS353: 61.41%
+  - Zhang et al. (2016)     |  Translation: 36.73%  MWS353: 61.62%
+  - Artetxe et al. (2016)   |  Translation: 39.27%  MWS353: 61.74%
+  - Proposed method         |  Translation: 39.67%  MWS353: 62.35%
+25 WORD DICTIONARY
+  - Mikolov et al. (2013a)  |  Translation:  0.00%  MWS353: -2.84%
+  - Xing et al. (2015)      |  Translation:  0.07%  MWS353: 13.35%
+  - Zhang et al. (2016)     |  Translation:  0.07%  MWS353: 17.27%
+  - Artetxe et al. (2016)   |  Translation:  0.00%  MWS353: 17.41%
+  - Proposed method         |  Translation: 39.33%  MWS353: 61.58%
+NUMERAL DICTIONARY
+  - Mikolov et al. (2013a)  |  Translation:  0.00%  MWS353: 28.75%
+  - Xing et al. (2015)      |  Translation:  0.13%  MWS353: 27.75%
+  - Zhang et al. (2016)     |  Translation:  0.27%  MWS353: 27.38%
+  - Artetxe et al. (2016)   |  Translation:  0.40%  MWS353: 24.85%
+  - Proposed method         |  Translation: 39.40%  MWS353: 62.82%
+
