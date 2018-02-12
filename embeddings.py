@@ -32,7 +32,7 @@ def read(file, threshold=0, vocabulary=None):
             matrix.append(np.fromstring(vec, sep=' '))
     return (words, matrix) if vocabulary is None else (words, np.array(matrix))
 
-def orthoread(efile, ffile, n=1, threshold=0):
+def orthoread(efile, ffile, scaleConst, n=1, threshold=0):
 
   def charmap(ewords, fwords, n=1):
     def ngrammer(n):
@@ -50,13 +50,13 @@ def orthoread(efile, ffile, n=1, threshold=0):
           i += 1
     return c2i, i, ngrams
   
-  def orthoextend(words, matrix, c2i, alphSize, ngrams, scaleConst=6):
+  def orthoextend(words, matrix, c2i, alphSize, ngrams, scale):
     exts = []
     for i, w in enumerate(words):
       ext = np.zeros(alphSize)
       for cs in ngrams(w):
         ext[c2i[cs]] += 1
-      ext /= scaleConst
+      ext /= scale
       exts.append(ext)
     matrix = np.append(matrix, exts, 1)
     matrix = matrix / np.linalg.norm(matrix, axis=1, keepdims=True)
@@ -65,8 +65,8 @@ def orthoread(efile, ffile, n=1, threshold=0):
   ewords, ematrix = read(efile, threshold)
   fwords, fmatrix = read(ffile, threshold)
   c2i, alphSize, ngrams = charmap(ewords, fwords, n)
-  ematrix = orthoextend(ewords, ematrix, c2i, alphSize, ngrams)
-  fmatrix = orthoextend(fwords, fmatrix, c2i, alphSize, ngrams)
+  ematrix = orthoextend(ewords, ematrix, c2i, alphSize, ngrams, scaleConst)
+  fmatrix = orthoextend(fwords, fmatrix, c2i, alphSize, ngrams, scaleConst)
 
   return (ewords, ematrix), (fwords, fmatrix)
 

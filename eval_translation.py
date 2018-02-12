@@ -32,6 +32,7 @@ def main():
     parser.add_argument('-d', '--dictionary', default=sys.stdin.fileno(), help='the test dictionary file (defaults to stdin)')
     parser.add_argument('--dot', action='store_true', help='use the dot product in the similarity computations instead of the cosine')
     parser.add_argument('--encoding', default='utf-8', help='the character encoding for input/output (defaults to utf-8)')
+    parser.add_argument('--output', type=str, help='file to write record of correct/incorrect translations')
     args = parser.parse_args()
 
     # Read input embeddings
@@ -66,6 +67,9 @@ def main():
     oov -= vocab  # If one of the translation options is in the vocabulary, then the entry is not an oov
     coverage = len(src2trg) / (len(src2trg) + len(oov))
 
+    if args.output:
+      outputfile = open(args.output, mode='w',encoding=args.encoding, errors='surrogateescape')
+
     # Compute accuracy
     correct = 0
     src, trg = zip(*src2trg.items())
@@ -76,6 +80,10 @@ def main():
         for k in range(j-i):
             if nn[k] in trg[i+k]:
                 correct += 1
+                if args.output:
+                  outputfile.write("Correct:{} {} {}\n".format(src_words[src[i+k]], trg_words[nn[k]],[trg_words[t] for t in trg[i+k]]))
+            elif args.output:
+              outputfile.write("Incorrect:{} {} {}\n".format(src_words[src[i+k]], trg_words[nn[k]],[trg_words[t] for t in trg[i+k]]))
     print('Coverage:{0:7.2%}  Accuracy:{1:7.2%}'.format(coverage, correct / len(src2trg)))
 
 
