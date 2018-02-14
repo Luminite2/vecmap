@@ -33,6 +33,9 @@ def main():
     parser.add_argument('--dot', action='store_true', help='use the dot product in the similarity computations instead of the cosine')
     parser.add_argument('--encoding', default='utf-8', help='the character encoding for input/output (defaults to utf-8)')
     parser.add_argument('--output', type=str, help='file to write record of correct/incorrect translations')
+    parser.add_argument('--identity', action='store_true', help='do evaluation as normal, but if identity translation is available, use it instead')
+    parser.add_argument('--identity_dict', action='store_true', help='do evaluation as normal, but if identity translation is available within dictionary, use it instead')
+    parser.add_argument('--identity_either', action='store_true', help='do evaluation as normal, but if identity translation is available AND correct, use it instead')
     args = parser.parse_args()
 
     # Read input embeddings
@@ -53,6 +56,7 @@ def main():
     # Read dictionary and compute coverage
     f = open(args.dictionary, encoding=args.encoding, errors='surrogateescape')
     src2trg = collections.defaultdict(set)
+    dict_trgs = set()
     oov = set()
     vocab = set()
     for line in f:
@@ -60,6 +64,7 @@ def main():
         try:
             src_ind = src_word2ind[src]
             trg_ind = trg_word2ind[trg]
+            dict_trgs.add(trg)
             src2trg[src_ind].add(trg_ind)
             vocab.add(src)
         except KeyError:
@@ -78,12 +83,35 @@ def main():
         similarities = src_matrix[list(src[i:j])].dot(trg_matrix.T)
         nn = np.argmax(similarities, axis=1).tolist()
         for k in range(j-i):
-            if nn[k] in trg[i+k]:
+            sw = src_words[src[i+k]]
+            tws = [trg_words[t] for t in trg[i+k]]
+            bCor = False
+            guess = trg_words[nn[k]]
+            if args.identity and sw in trg_word2ind: #able to use identity as guess
+                if sw in tws: #guessing identity is correct
+                    bCor = True
+                    correct += 1
+                    guess = sw
+                #else, guessing identity is incorrect
+            elif args.identity_dict and sw in dict_trgs:
+                if sw in tws:
+                    bCor = True
+                    correct += 1
+                    guess = sw
+            elif nn[k] in trg[i+k]:
                 correct += 1
-                if args.output:
-                  outputfile.write("Correct:{} {} {}\n".format(src_words[src[i+k]], trg_words[nn[k]],[trg_words[t] for t in trg[i+k]]))
-            elif args.output:
-              outputfile.write("Incorrect:{} {} {}\n".format(src_words[src[i+k]], trg_words[nn[k]],[trg_words[t] for t in trg[i+k]]))
+                bCor = True
+            elif args.identity_either and sw in tws:
+                correct += 1
+                bCor = True
+                guess = sw
+
+            if args.output:
+                if bCor:
+                    outputfile.write("Correct:{} {} {}\n".format(sw, guess, tws))
+                else:
+                    outputfile.write("Incorrect:{} {} {}\n".format(sw, guess, tws))
+
     print('Coverage:{0:7.2%}  Accuracy:{1:7.2%}'.format(coverage, correct / len(src2trg)))
 
 
