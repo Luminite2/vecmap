@@ -32,7 +32,7 @@ def read(file, threshold=0, vocabulary=None):
             matrix.append(np.fromstring(vec, sep=' '))
     return (words, matrix) if vocabulary is None else (words, np.array(matrix))
 
-def orthoread(efile, ffile, scaleConst, n=1, threshold=0):
+def orthoread(efile, ffile, scaleConst, n=1, threshold=0, **kwargs):
 
   def charmap(ewords, fwords, n=1):
     def ngrammer(n):
@@ -68,7 +68,10 @@ def orthoread(efile, ffile, scaleConst, n=1, threshold=0):
   ematrix = orthoextend(ewords, ematrix, c2i, alphSize, ngrams, scaleConst)
   fmatrix = orthoextend(fwords, fmatrix, c2i, alphSize, ngrams, scaleConst)
 
-  return (ewords, ematrix), (fwords, fmatrix)
+  if "c2i" in kwargs:
+    return (ewords, ematrix), (fwords, fmatrix), c2i
+  else:
+    return (ewords, ematrix), (fwords, fmatrix)
 
 def write(words, matrix, file):
     print('%d %d' % matrix.shape, file=file)

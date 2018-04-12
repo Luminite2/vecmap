@@ -88,16 +88,16 @@ def main():
             bCor = False
             guess = trg_words[nn[k]]
             if args.identity and sw in trg_word2ind: #able to use identity as guess
+                guess = sw
                 if sw in tws: #guessing identity is correct
                     bCor = True
                     correct += 1
-                    guess = sw
                 #else, guessing identity is incorrect
             elif args.identity_dict and sw in dict_trgs:
+                guess = sw
                 if sw in tws:
                     bCor = True
                     correct += 1
-                    guess = sw
             elif nn[k] in trg[i+k]:
                 correct += 1
                 bCor = True
