@@ -117,20 +117,29 @@ def debug(srcs, trgs, k):
       maxlen = len(cands)
       print("{}".format(len(maxlen)))
 
-def getEmbeds(l2, l1="en"):
+def getEmbeds(l2, l1="en", **kwargs):
   import time
   import sys
-  print("Beginning!")
-  sys.stdout.flush()
+  verbose = False
+  if "verbose" in kwargs:
+    verbose = kwargs["verbose"]
+  if verbose:
+    print("Beginning!")
+    sys.stdout.flush()
   start = time.time()
-  srcF = open("./data/embeddings/unit/{}.emb.txt".format(l1), encoding="utf-8", errors="surrogateescape")
-  trgF = open("./data/embeddings/unit/{}.emb.txt".format(l2), encoding="utf-8", errors="surrogateescape")
+  base = "./data/embeddings/unit-center"
+  if "base" in kwargs:
+    base = kwargs["base"]
+  srcF = open("{}/{}.emb.txt".format(base,l1), encoding="utf-8", errors="surrogateescape")
+  trgF = open("{}/{}.emb.txt".format(base,l2), encoding="utf-8", errors="surrogateescape")
   srcs, x = embeddings.read(srcF)
   t1 = time.time()
-  print("Read source embeddings, time: {}".format(t1-start))
+  if verbose:
+    print("Read source embeddings, time: {}".format(t1-start))
   trgs, z = embeddings.read(trgF)
   t2 = time.time()
-  print("Read target embeddings, time: {}".format(t2-t1))
+  if verbose:
+    print("Read target embeddings, time: {}".format(t2-t1))
   return srcs, x, trgs, z
 
 
@@ -162,8 +171,8 @@ def load_sparse_csr(fname='en-it_simMatrix_1.npz'):
   loader = np.load(fname)
   return csr_matrix((loader['data'], loader['indices'], loader['indptr']), shape = loader['shape'])
 
-def vocabWIndices(l2, l1="en"):
-  srcs, x, trgs, z = getEmbeds(l2,l1)
+def vocabWIndices(l2, l1="en", **kwargs):
+  srcs, x, trgs, z = getEmbeds(l2,l1,**kwargs)
   src_word2ind = {word: i for i, word in enumerate(srcs)}
   trg_word2ind = {word: i for i, word in enumerate(trgs)}
   return srcs, x, trgs, z, src_word2ind, trg_word2ind
@@ -195,9 +204,44 @@ def similarityMatrix(l2,l1="en"):
     #if in there, get similarity score (1 + log whatever), put in matrix at right position
   #return matrix
 
+def objective(xw,z):
+  import numpy as np
+
+  MAX_DIM_Z = 10000
+  MAX_DIM_X = 10000
+  #xw = xw[:100]
+  #z = z[:100]
+  best_sim = np.full(xw.shape[0], -100.)
+  for i in range(0, xw.shape[0], MAX_DIM_X):
+    for j in range(0, z.shape[0], MAX_DIM_Z):
+      sim = xw[i:i+MAX_DIM_X].dot(z[j:j+MAX_DIM_Z].T)
+      for k in range(sim.shape[0]):
+        l = sim[k].argmax()
+        if sim[k, l] > best_sim[i+k]:
+          best_sim[i+k] = sim[k, l]
+
+  return np.mean(best_sim)
+
+def get_objective(l2, method,l1="en"):
+  base = "./output/acl2017/{}-{}/numerals/{}".format(l1,l2,method)
+  srcs, xw, trgs, z, src2ind, trg2ind = vocabWIndices(l2,l1,base=base)
+  normal_objective = objective(xw,z)
+  xw = xw[:,:300]
+  z = z[:,:300]
+  new_objective = objective(xw,z)
+  print("-----\n{}-{} {}\nOld:{}\nNew:{}\n-----".format(l1,l2,method,normal_objective,new_objective))
+
 def main():
-  similarityMatrix("fi")
+  #similarityMatrix("fi")
   #simmat.dump("en-it_simMatrix.pkl")
+  #get_objective("it","1gram4")
+  #get_objective("it","1gram5")
+  #get_objective("it","1gram6")
+  #get_objective("it","1gram7")
+  #get_objective("it","1gram8")
+  get_objective("it","1gram10")
+  get_objective("it","1gram16")
+  get_objective("it","1gram1000000")
 
 if __name__ == "__main__":
   main()

@@ -150,6 +150,13 @@ def myExec(s):
     return ret
 
 def sbatch(cmd, name):
+  from os import listdir
+  from os.path import isfile
+  files = [f for f in listdir("./") if isfile(f)]
+  for f in files:
+    if f.startswith(name) and f.endswith("which"):
+      print("Found .which file for {}, skipping mapping".format(name))
+      return
   #make temp sbatch file
   #fill it
   #put in module loads
@@ -208,8 +215,10 @@ def run(parsed_args):
   deartetxe = Experiment('en', 'de', 'proposed')
   fiartetxe = Experiment('en', 'fi', 'proposed')
 
-  #params = [1,2,3,4,5,6,7,8,10,16,1000000]#[1,2,3,4,5,6,7,8,10,16,1000000]
-  params = [1,7]
+  params = [0.5,1,2,3,4,5,6,7,8,10,16,1000000]#[1,2,3,4,5,6,7,8,10,16,1000000]
+  #params = [1,7]
+  params_sim_both = [1,1,1,1,1,1,0.5,0.5,0.5,0.5,0.5,0.5]
+  params_ext_both = [5,6,7,8,10,16,5,6,7,8,10,16]
 
   it1gram = Experiment('en','it','1gram{}')
   it1gram.static('--orthographic_learn_n 1')
@@ -234,28 +243,46 @@ def run(parsed_args):
 
   itboth = Experiment('en','it','combined_1gram{}_simMat{}')
   itboth.static('--orthographic_learn_n 1')
-  itboth.dynamic('--orthographic_learn {} --orthographic_sim {}', [7], [1])
+  itboth.dynamic('--orthographic_learn {} --orthographic_sim {}', params_ext_both, params_sim_both)
 
   deboth = Experiment('en','de','combined_1gram{}_simMat{}')
   deboth.static('--orthographic_learn_n 1')
-  deboth.dynamic('--orthographic_learn {} --orthographic_sim {}', [7], [1])
+  deboth.dynamic('--orthographic_learn {} --orthographic_sim {}', params_ext_both, params_sim_both)
 
   fiboth = Experiment('en','fi','combined_1gram{}_simMat{}')
   fiboth.static('--orthographic_learn_n 1')
-  fiboth.dynamic('--orthographic_learn {} --orthographic_sim {}', [7], [1])
+  fiboth.dynamic('--orthographic_learn {} --orthographic_sim {}', params_ext_both, params_sim_both)
+
+
+  #de 16 5
+  test = Experiment('en','de','combined_1gram{}_simMat{}')
+  test.static('--orthographic_learn_n 1')
+  test.dynamic('--orthographic_learn {} --orthographic_sim {}', [16], [.5])
+
+  """
+  need to do all languages, both methods, param search
+  keep to 6 per language
+  sim: 1,
+  ext: 7, 6, 8, 5, 10, 16
+  """
 
   exps_1gram = [it1gram, de1gram, fi1gram]
   exps_simMat = [itsimMat, desimMat, fisimMat]
   exps_art = [itartetxe, deartetxe, fiartetxe]
   exps_both = [itboth, deboth, fiboth]
   exps_both_defi = [deboth, fiboth]
+  exps_full = exps_1gram + exps_simMat + exps_both
   #exps = exps_1gram + exps_simMat
   #exps = exps_art
   #exps = exps_both
-  exps = exps_both_defi
+  #exps = exps_both
+  exps = exps_full
+  #exps = [test]
 
   DATA = 'data'
   OUTPUT = 'output/acl2017'
+  #DEVSUFFIX = '.dev2.full500.txt'
+  DEVSUFFIX = '.dev2.full1000.txt'
   
   barline = '--------------------------------------------------------------------------------'
   if parsed_args.results_only:
@@ -288,20 +315,27 @@ def run(parsed_args):
 
       if os.path.exists(src_out_emb) and os.path.exists(trg_out_emb):
         outputline = "  - {} | Translation".format(methodname)
-        cmd_dev = "python3 eval_translation.py --dot -d {}/dictionaries/{}.dev.txt --output {}/{}/numerals/{}/{}.translation.dev.results {} {}".format(DATA,st,OUTPUT,st,methodname,st,src_out_emb,trg_out_emb)
+        #cmd_dev = "python3 eval_translation.py --dot -d {}/dictionaries/{}.dev.txt --output {}/{}/numerals/{}/{}.translation.dev.results {} {}".format(DATA,st,OUTPUT,st,methodname,st,src_out_emb,trg_out_emb)
+        cmd_dev = "python3 eval_translation.py --dot -d {}/dictionaries/{}{} --output {}/{}/numerals/{}/{}.translation.dev.results {} {}".format(DATA,st,DEVSUFFIX,OUTPUT,st,methodname,st,src_out_emb,trg_out_emb)
         #| grep -Eo \':[^:]+%\' | tail -1 tr -d \'\\n\'
-        cmd_test = "python3 eval_translation.py --dot -d {}/dictionaries/{}.test.split.txt --output {}/{}/numerals/{}/{}.translation.test.split.results {} {}".format(DATA,st,OUTPUT,st,methodname,st,src_out_emb,trg_out_emb)
+        #cmd_test = "python3 eval_translation.py --dot -d {}/dictionaries/{}.test.split.txt --output {}/{}/numerals/{}/{}.translation.test.split.results {} {}".format(DATA,st,OUTPUT,st,methodname,st,src_out_emb,trg_out_emb)
         cmd_test_full = "python3 eval_translation.py --dot -d {}/dictionaries/{}.test.txt --output {}/{}/numerals/{}/{}.translation.test.results {} {}".format(DATA,st,OUTPUT,st,methodname,st,src_out_emb,trg_out_emb)
+        cmd_ident_full = "python3 eval_translation.py --identity --dot -d {}/dictionaries/{}.test.txt --output {}/{}/numerals/{}/{}.translation.testIdent.results {} {}".format(DATA,st,OUTPUT,st,methodname,st,src_out_emb,trg_out_emb)
         dev_output = myExec(cmd_dev).split()[-1]
-        test_output = myExec(cmd_test).split()[-1]
+        test_ident_output = myExec(cmd_ident_full).split()[-1]
         test_full_output = myExec(cmd_test_full).split()[-1]
         print(outputline + " (Dev) " + dev_output)
-        print(outputline + " (Test) " + test_output)
         print(outputline + " (Test Full) " + test_full_output)
-        if len(opts) > 0:
-          exp.storeResult(str(opts[0]),(dev_output,test_output,test_full_output))
+        print(outputline + " (Test w/ Identy) " + test_ident_output)
+        if len(opts) == 1:
+          #exp.storeResult(str(opts[0]),(dev_output,test_output,test_full_output))
+          exp.storeResult(str(opts[0]),(dev_output,test_full_output,test_ident_output))
+        elif len(opts) > 1:
+          optstr = ','.join([str(o) for o in opts])
+          exp.storeResult(optstr,(dev_output,test_full_output,test_ident_output))
         else:
-          exp.storeResult("-",(dev_output,test_output,test_full_output))
+          #exp.storeResult("-",(dev_output,test_output,test_full_output))
+          exp.storeResult("-",(dev_output,test_full_output,test_ident_output))
       else:
         print("Missing mapped embeddings for {}_{}; skipping evaluation".format(st,methodname))
   #end for exp
@@ -311,7 +345,6 @@ def run(parsed_args):
   #row for each scale, column for scales, dev, test (both by lang!)
   r = recordResults(exps)
   print(r)
-
 
 def recordResults(exps):
   from collections import defaultdict
@@ -331,19 +364,22 @@ def recordResults(exps):
     fkey = "{}.data".format(e.method.replace('{}',''))
     d = files[fkey]
     devstr = "{}_dev".format(e.trg)
-    teststr = "{}_test".format(e.trg)
+    #teststr = "{}_test".format(e.trg)
     testfullstr = "{}_test_full".format(e.trg)
+    testidentstr = "{}_test_ident".format(e.trg)
     d['Scale_Factor'][devstr] = devstr
-    d['Scale_Factor'][teststr] = teststr
+    #d['Scale_Factor'][teststr] = teststr
     d['Scale_Factor'][testfullstr] = testfullstr
+    d['Scale_Factor'][testidentstr] = testidentstr
     for k in e.results:
       try:
         k2 = "{:02.7f}".format(1.0/float(k))
       except:
         k2 = k
       d[k2][devstr] = e.results[k][0]
-      d[k2][teststr] = e.results[k][1]
-      d[k2][testfullstr] = e.results[k][2]
+      #d[k2][teststr] = e.results[k][1]
+      d[k2][testfullstr] = e.results[k][1]#2
+      d[k2][testidentstr] = e.results[k][2]
 
 
   for fn in files:
