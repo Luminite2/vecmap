@@ -221,16 +221,16 @@ def run(parsed_args):
   params_ext_both = [5,6,7,8,10,16,5,6,7,8,10,16]
 
   it1gram = Experiment('en','it','1gram{}')
-  it1gram.static('--orthographic_learn_n 1')
-  it1gram.dynamic('--orthographic_learn {}', params)
+  it1gram.static('--orthographic_ext_n 1')
+  it1gram.dynamic('--orthographic_ext {}', params)
 
   de1gram = Experiment('en','de','1gram{}')
-  de1gram.static('--orthographic_learn_n 1')
-  de1gram.dynamic('--orthographic_learn {}', params)
+  de1gram.static('--orthographic_ext_n 1')
+  de1gram.dynamic('--orthographic_ext {}', params)
 
   fi1gram = Experiment('en','fi','1gram{}')
-  fi1gram.static('--orthographic_learn_n 1')
-  fi1gram.dynamic('--orthographic_learn {}', params)
+  fi1gram.static('--orthographic_ext_n 1')
+  fi1gram.dynamic('--orthographic_ext {}', params)
 
   itsimMat = Experiment('en','it','simMat{}')
   itsimMat.dynamic('--orthographic_sim {}', params)
@@ -242,22 +242,22 @@ def run(parsed_args):
   fisimMat.dynamic('--orthographic_sim {}', params)
 
   itboth = Experiment('en','it','combined_1gram{}_simMat{}')
-  itboth.static('--orthographic_learn_n 1')
-  itboth.dynamic('--orthographic_learn {} --orthographic_sim {}', params_ext_both, params_sim_both)
+  itboth.static('--orthographic_ext_n 1')
+  itboth.dynamic('--orthographic_ext {} --orthographic_sim {}', params_ext_both, params_sim_both)
 
   deboth = Experiment('en','de','combined_1gram{}_simMat{}')
-  deboth.static('--orthographic_learn_n 1')
-  deboth.dynamic('--orthographic_learn {} --orthographic_sim {}', params_ext_both, params_sim_both)
+  deboth.static('--orthographic_ext_n 1')
+  deboth.dynamic('--orthographic_ext {} --orthographic_sim {}', params_ext_both, params_sim_both)
 
   fiboth = Experiment('en','fi','combined_1gram{}_simMat{}')
-  fiboth.static('--orthographic_learn_n 1')
-  fiboth.dynamic('--orthographic_learn {} --orthographic_sim {}', params_ext_both, params_sim_both)
+  fiboth.static('--orthographic_ext_n 1')
+  fiboth.dynamic('--orthographic_ext {} --orthographic_sim {}', params_ext_both, params_sim_both)
 
 
   #de 16 5
   test = Experiment('en','de','combined_1gram{}_simMat{}')
-  test.static('--orthographic_learn_n 1')
-  test.dynamic('--orthographic_learn {} --orthographic_sim {}', [16], [.5])
+  test.static('--orthographic_ext_n 1')
+  test.dynamic('--orthographic_ext {} --orthographic_sim {}', [16], [.5])
 
   """
   need to do all languages, both methods, param search

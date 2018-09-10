@@ -48,10 +48,10 @@ def main():
     self_learning_group.add_argument('--self_learning', action='store_true', help='enable self-learning')
     self_learning_group.add_argument('--direction', choices=['forward', 'backward', 'union'], default='forward', help='the direction for dictionary induction (defaults to forward)')
     self_learning_group.add_argument('--numerals', action='store_true', help='use latin numerals (i.e. words matching [0-9]+) as the seed dictionary')
-    self_learning_group.add_argument('--orthographic_dict', action='store_true', help='use lowest edit distance as seed dictionary')
-    self_learning_group.add_argument('--orthographic_learn', default=0, type=float, help='use character n-gram information during learning')
-    self_learning_group.add_argument('--orthographic_learn_n', default=1, type=int, help='n for character n-grams in orthograhpic_learn option')
-    self_learning_group.add_argument('--orthographic_sim', default=0, type=float, help='use edit distance when calculating similarity')
+    self_learning_group.add_argument('--orthographic_ext', default=0, type=float, help='augment embeddings with character n-gram counts; provide inverse scale constant as argument')
+    self_learning_group.add_argument('--orthographic_ext_n', default=1, type=int, help='n for character n-grams in orthograhpic_ext option')
+    self_learning_group.add_argument('--orthographic_sim', default=0, type=float, help='use edit distance when calculating similarity; provide inverse scale constant as argument')
+    self_learning_group.add_argument('--orthographic_sim_k', default=1, type=int, help='k to use for symmetric delete heuristic for limiting edit distance calculations')
     self_learning_group.add_argument('--threshold', default=0.000001, type=float, help='the convergence threshold (defaults to 0.000001)')
     self_learning_group.add_argument('--validation', default=None, help='a dictionary file for validation at each iteration')
     self_learning_group.add_argument('--log', help='write to a log file in tsv format at each iteration')
@@ -65,8 +65,8 @@ def main():
     x = None
     trg_words = None
     z = None
-    if args.orthographic_learn:
-      (src_words, x), (trg_words, z) = embeddings.orthoread(srcfile, trgfile, args.orthographic_learn, args.orthographic_learn_n)
+    if args.orthographic_ext:
+      (src_words, x), (trg_words, z) = embeddings.orthoread(srcfile, trgfile, args.orthographic_ext, args.orthographic_ext_n)
     else:
       src_words, x = embeddings.read(srcfile)
       trg_words, z = embeddings.read(trgfile)
@@ -88,22 +88,6 @@ def main():
         for word in numerals:
             src_indices.append(src_word2ind[word])
             trg_indices.append(trg_word2ind[word])
-    elif args.orthographic_dict:
-        src_words_subset = src_words[:10]
-        trg_words_subset = trg_words[:10]
-        if args.dictionary != sys.stdin.fileno():
-            print('WARNING: Using edit distance instead of the training dictionary', file=sys.stderr)
-        #for each src_word, find best trg_word
-        for src_word in src_words_subset:
-            dist = None
-            best_trg = None
-            for trg_word in trg_words_subset:
-                this_dist = editDist(src_word, trg_word)
-                if dist == None or this_dist < dist:
-                    dist = this_dist
-                    best_trg = trg_word
-            src_indices.append(src_word2ind[src_word])
-            trg_indices.append(trg_word2ind[best_trg])
     else:
         f = open(args.dictionary, encoding=args.encoding, errors='surrogateescape')
         for line in f:
@@ -162,10 +146,8 @@ def main():
     if args.orthographic_sim:
       s = ntpath.basename(args.src_input)[0:2]
       t = ntpath.basename(args.trg_input)[0:2]
-      k = 1 #TODO: generalize?
-      matfname = "{}-{}_simMatrix_{}.npz".format(s,t,k)
-      ortho_sim = ortho.load_sparse_csr(matfname) #TODO: generalize
-      #library, parse src_input and trg_input, get first two characters
+      k = args.orthographic_sim_k
+      ortho_sim = ortho.loadOrCreateSimilarityMatrix(s,t,k)
 
     t = time.time()
     while it == 1 or objective - prev_objective >= args.threshold:

@@ -33,6 +33,7 @@ def read(file, threshold=0, vocabulary=None):
     return (words, matrix) if vocabulary is None else (words, np.array(matrix))
 
 def orthoread(efile, ffile, scaleConst, n=1, threshold=0, **kwargs):
+  """scaleConst is the inverse of c_e in the paper, i.e. c_e == 1/8 -> scaleConst == 8"""
 
   def charmap(ewords, fwords, n=1):
     def ngrammer(n):
