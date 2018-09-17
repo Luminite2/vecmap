@@ -177,7 +177,6 @@ def vocabWIndices(l1, l2, **kwargs):
 
 def createAndSaveSimilarityMatrix(l1,l2,k,fpath):
   import numpy as np
-  import tables
   from scipy.sparse import lil_matrix
   from scipy.sparse import csr_matrix
 
