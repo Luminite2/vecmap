@@ -1,3 +1,11 @@
+
+This is a fork of artetxem/vecmap, adding additional functionality based on orthographic (spelling) information, as described in the following paper:
+**[Orthographic Features for Bilingual Lexicon Induction](http://aclweb.org/anthology/P18-2062)**. In *Proceedings of the 56th Annual Meeting of the Association for Computational Linguistics (Volume 2: Short Papers)*, pages 390-394.
+
+The reproduce\_acl2018\_orthographic.sh script can be used to replicate the results listed in that paper (note that there is a small amount of nondeterminism, so any individual run may not match all numbers exactly).
+
+Below is the full content of the README for artetxem/vecmap at the time that this was forked.
+
 VecMap (bilingual word embedding mappings)
 ==============
 
