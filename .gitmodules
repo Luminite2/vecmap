@@ -1,0 +1,3 @@
+[submodule "edit-distance-learning"]
+	path = edit-distance-learning
+	url = https://github.com/Luminite2/edit-distance-learning.git
