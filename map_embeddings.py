@@ -24,6 +24,8 @@ import time
 import ortho
 
 import ntpath
+sys.path.append('edit-distance-learning/')
+import learnedit
 
 # Maximum dimensions for the similarity matrix computation in memory
 # A MAX_DIM_X * MAX_DIM_Z dimensional matrix will be used
@@ -48,14 +50,16 @@ def main():
     self_learning_group.add_argument('--self_learning', action='store_true', help='enable self-learning')
     self_learning_group.add_argument('--direction', choices=['forward', 'backward', 'union'], default='forward', help='the direction for dictionary induction (defaults to forward)')
     self_learning_group.add_argument('--numerals', action='store_true', help='use latin numerals (i.e. words matching [0-9]+) as the seed dictionary')
-    self_learning_group.add_argument('--orthographic_ext', default=0, type=float, help='augment embeddings with character n-gram counts; provide inverse scale constant as argument')
-    self_learning_group.add_argument('--orthographic_ext_n', default=1, type=int, help='n for character n-grams in orthograhpic_ext option')
-    self_learning_group.add_argument('--orthographic_sim', default=0, type=float, help='use edit distance when calculating similarity; provide inverse scale constant as argument')
-    self_learning_group.add_argument('--orthographic_sim_k', default=1, type=int, help='k to use for symmetric delete heuristic for limiting edit distance calculations')
     self_learning_group.add_argument('--threshold', default=0.000001, type=float, help='the convergence threshold (defaults to 0.000001)')
     self_learning_group.add_argument('--validation', default=None, help='a dictionary file for validation at each iteration')
     self_learning_group.add_argument('--log', help='write to a log file in tsv format at each iteration')
     self_learning_group.add_argument('-v', '--verbose', action='store_true', help='write log information to stderr at each iteration')
+    orthographic_group = parser.add_argument_group('orthographic arguments', 'Arguments for controlling use of orthographic information (Riley and Gildea 2018)')
+    orthographic_group.add_argument('--orthographic_ext', default=0, type=float, help='augment embeddings with character n-gram counts; provide inverse scale constant as argument')
+    orthographic_group.add_argument('--orthographic_ext_n', default=1, type=int, help='n for character n-grams in orthograhpic_ext option')
+    orthographic_group.add_argument('--orthographic_sim', default=0, type=float, help='use edit distance when calculating similarity; provide inverse scale constant as argument')
+    orthographic_group.add_argument('--orthographic_sim_k', default=1, type=int, help='k to use for symmetric delete heuristic for limiting edit distance calculations')
+
     args = parser.parse_args()
 
     # Read input embeddings
