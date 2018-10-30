@@ -1,5 +1,22 @@
 import itertools
 import embeddings
+sys.path.append('edit-distance-learning/')
+import learnedit
+from enum import Enum, auto
+
+class EditDistChoice(Enum):
+  ned = auto()
+  learn = auto()
+
+  def __str__(self):
+    return self.name
+
+  @staticmethod
+  def from_string(s):
+    try:
+      return EditDistChoice[s]
+    except KeyError:
+      raise ValueError('Invalid edit distance algorithm; choices are {}'.format(str([e.name for e in list(EditDistChoice)])))
 
 def editDist(w1,w2):
     l1 = len(w1)
@@ -160,7 +177,7 @@ def load_sparse_csr(fname):
 def similarityMatrixFileName(l1,l2,k):
   return "{}-{}_simMatrix_{}.npz".format(l1,l2,k)
 
-def loadOrCreateSimilarityMatrix(l1,l2,k):
+def loadOrCreateSimilarityMatrix(l1,l2,k): #TODO: add arg for alg selection
   fpath = similarityMatrixFileName(l1,l2,k)
   simmat = None
   try:

@@ -24,8 +24,6 @@ import time
 import ortho
 
 import ntpath
-sys.path.append('edit-distance-learning/')
-import learnedit
 
 # Maximum dimensions for the similarity matrix computation in memory
 # A MAX_DIM_X * MAX_DIM_Z dimensional matrix will be used
@@ -59,6 +57,7 @@ def main():
     orthographic_group.add_argument('--orthographic_ext_n', default=1, type=int, help='n for character n-grams in orthograhpic_ext option')
     orthographic_group.add_argument('--orthographic_sim', default=0, type=float, help='use edit distance when calculating similarity; provide inverse scale constant as argument')
     orthographic_group.add_argument('--orthographic_sim_k', default=1, type=int, help='k to use for symmetric delete heuristic for limiting edit distance calculations')
+    orthographic_group.add_argument('--orthographic_sim_alg', default='ned', type=str, choices=['ned','learn'], help='algorithm to use for quantifying edit distance')
 
     args = parser.parse_args()
 
@@ -151,7 +150,7 @@ def main():
       s = ntpath.basename(args.src_input)[0:2]
       t = ntpath.basename(args.trg_input)[0:2]
       k = args.orthographic_sim_k
-      ortho_sim = ortho.loadOrCreateSimilarityMatrix(s,t,k)
+      ortho_sim = ortho.loadOrCreateSimilarityMatrix(s,t,k) #TODO: add arg for alg selection
 
     t = time.time()
     while it == 1 or objective - prev_objective >= args.threshold:

@@ -5,6 +5,8 @@ Parker Riley, Daniel Gildea. 2018. **[Orthographic Features for Bilingual Lexico
 
 The reproduce\_acl2018\_orthographic.sh script can be used to replicate the results listed in that paper (note that there is a small amount of nondeterminism, so any individual run may not match all numbers exactly).
 
+In addition to the requirements listed below, Gensim is required for some of the orthographic components.
+
 Below is the full content of the README for artetxem/vecmap at the time that this was forked.
 
 VecMap (bilingual word embedding mappings)
