@@ -16,6 +16,7 @@
 from cupy_utils import *
 
 import numpy as np
+import orthographic
 
 
 def read(file, threshold=0, vocabulary=None, dtype='float'):
@@ -34,6 +35,12 @@ def read(file, threshold=0, vocabulary=None, dtype='float'):
             matrix.append(np.fromstring(vec, sep=' ', dtype=dtype))
     return (words, matrix) if vocabulary is None else (words, np.array(matrix, dtype=dtype))
 
+def ortho_read(s_file, t_file, scale, char_n=1, threshold=0, s_vocab=None, t_vocab=None, dtype='float'):
+  s_words, s_matrix = read(s_file, threshold, s_vocab, dtype)
+  t_words, t_matrix = read(t_file, threshold, t_vocab, dtype)
+
+  s_matrix, t_matrix = orthographic.extend_bilingual_embeddings(s_words, s_matrix, t_words, t_matrix, scale, char_n)
+  return (s_words, s_matrix), (t_words, t_matrix)
 
 def write(words, matrix, file):
     m = asnumpy(matrix)
