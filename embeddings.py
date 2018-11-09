@@ -39,7 +39,7 @@ def ortho_read(s_file, t_file, scale, char_n=1, threshold=0, s_vocab=None, t_voc
   s_words, s_matrix = read(s_file, threshold, s_vocab, dtype)
   t_words, t_matrix = read(t_file, threshold, t_vocab, dtype)
 
-  s_matrix, t_matrix = orthographic.extend_bilingual_embeddings(s_words, s_matrix, t_words, t_matrix, scale, char_n)
+  s_matrix, t_matrix = orthographic.extend_bilingual_embeddings(s_words, s_matrix, t_words, t_matrix, scale, char_n, dtype)
   return (s_words, s_matrix), (t_words, t_matrix)
 
 def write(words, matrix, file):

@@ -108,6 +108,11 @@ def main():
     self_learning_group.add_argument('--stochastic_interval', default=50, type=int, help='stochastic dictionary induction interval (defaults to 50)')
     self_learning_group.add_argument('--log', help='write to a log file in tsv format at each iteration')
     self_learning_group.add_argument('-v', '--verbose', action='store_true', help='write log information to stderr at each iteration')
+
+    orthographic_group = parser.add_argument_group('orthographic arguments', 'Arguments for controlling use of orthographic (spelling) information')
+    #TODO: arguments
+    orthographic_group.add_argument('--orthographic_extend_scale', type=float, help='Enable orthographic extension, scaling character ngram counts by provided value (multiplicative; recommend ~0.125)')
+    orthographic_group.add_argument('--orthographic_extend_n', type=int, default=1, help='Value of n for character ngrams in orthographic extension; must also provide --ortho_extend_scale')
     args = parser.parse_args()
 
     if args.supervised is not None:
@@ -144,8 +149,16 @@ def main():
     # Read input embeddings
     srcfile = open(args.src_input, encoding=args.encoding, errors='surrogateescape')
     trgfile = open(args.trg_input, encoding=args.encoding, errors='surrogateescape')
-    src_words, x = embeddings.read(srcfile, dtype=dtype)
-    trg_words, z = embeddings.read(trgfile, dtype=dtype)
+
+    src_words = None
+    x = None
+    trg_words = None
+    z = None
+    if args.orthographic_extend_scale:
+      (src_words, x), (trg_words, z) = embeddings.ortho_read(srcfile, trgfile, args.orthographic_extend_scale, args.orthographic_extend_n, dtype=dtype)
+    else:
+      src_words, x = embeddings.read(srcfile, dtype=dtype)
+      trg_words, z = embeddings.read(trgfile, dtype=dtype)
 
     # NumPy/CuPy management
     if args.cuda:
@@ -306,7 +319,10 @@ def main():
                 zw = zw.dot(wz1)
 
             # STEP 2: Orthogonal mapping
+            #TODO: only comes here on last it, first 720 are presumably in the first branch
+            print('Attempting SVD, it = {}'.format(it))
             wx2, s, wz2_t = xp.linalg.svd(xw[src_indices].T.dot(zw[trg_indices]))
+            print('Done with SVD')
             wz2 = wz2_t.T
             xw = xw.dot(wx2)
             zw = zw.dot(wz2)
