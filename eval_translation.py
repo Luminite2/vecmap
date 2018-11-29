@@ -58,6 +58,7 @@ def main():
     parser.add_argument('--seed', type=int, default=0, help='the random seed')
     parser.add_argument('--precision', choices=['fp16', 'fp32', 'fp64'], default='fp32', help='the floating-point precision (defaults to fp32)')
     parser.add_argument('--cuda', action='store_true', help='use cuda (requires cupy)')
+    parser.add_argument('--dump_dict', type=str, default='', help='File to dump inferred dictionary to, only evaluated over source words in evaluation dictionary.')
     args = parser.parse_args()
 
     # Choose the right dtype for the desired precision
@@ -115,13 +116,16 @@ def main():
 
     # Find translations
     translation = collections.defaultdict(int)
+    scores = collections.defaultdict(float)
     if args.retrieval == 'nn':  # Standard nearest neighbor
         for i in range(0, len(src), BATCH_SIZE):
             j = min(i + BATCH_SIZE, len(src))
             similarities = x[src[i:j]].dot(z.T)
             nn = similarities.argmax(axis=1).tolist()
+            batch_scores = similarities.max(axis=1).tolist()
             for k in range(j-i):
                 translation[src[i+k]] = nn[k]
+                scores[src[i+k]] = batch_scores[k]
     elif args.retrieval == 'invnn':  # Inverted nearest neighbor
         best_rank = np.full(len(src), x.shape[0], dtype=int)
         best_sim = np.full(len(src), -100, dtype=dtype)
@@ -139,6 +143,7 @@ def main():
                         best_rank[l] = rank
                         best_sim[l] = sim
                         translation[src[l]] = k
+                        scores[src[l]] = sim
     elif args.retrieval == 'invsoftmax':  # Inverted softmax
         sample = xp.arange(x.shape[0]) if args.inv_sample is None else xp.random.randint(0, x.shape[0], args.inv_sample)
         partition = xp.zeros(z.shape[0])
@@ -149,8 +154,10 @@ def main():
             j = min(i + BATCH_SIZE, len(src))
             p = xp.exp(args.inv_temperature*x[src[i:j]].dot(z.T)) / partition
             nn = p.argmax(axis=1).tolist()
+            batch_scores = p.max(axis=1).tolist()
             for k in range(j-i):
                 translation[src[i+k]] = nn[k]
+                scores[src[i+k]] = batch_scores[k]
     elif args.retrieval == 'csls':  # Cross-domain similarity local scaling
         knn_sim_bwd = xp.zeros(z.shape[0])
         for i in range(0, z.shape[0], BATCH_SIZE):
@@ -160,11 +167,21 @@ def main():
             j = min(i + BATCH_SIZE, len(src))
             similarities = 2*x[src[i:j]].dot(z.T) - knn_sim_bwd  # Equivalent to the real CSLS scores for NN
             nn = similarities.argmax(axis=1).tolist()
+            batch_scores = similarities.max(axis=1).tolist()
             for k in range(j-i):
                 translation[src[i+k]] = nn[k]
+                scores[src[i+k]] = batch_scores[k]
 
     # Compute accuracy
     accuracy = np.mean([1 if translation[i] in src2trg[i] else 0 for i in src])
+    if args.dump_dict:
+      translation_scores = sorted({(i,translation[i]):scores[i] for i in src}.items(), key=lambda kv: kv[1], reverse=True)
+      with open(args.dump_dict, 'w', encoding=args.encoding, errors='surrogateescape') as f:
+        for ((src_i,trg_i),score) in translation_scores:
+          print('{} {}'.format(src_words[src_i], trg_words[trg_i]), file=f) #TODO: be able to dump score too?
+
+      
+
     print('Coverage:{0:7.2%}  Accuracy:{1:7.2%}'.format(coverage, accuracy))
 
 

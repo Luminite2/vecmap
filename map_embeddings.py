@@ -113,6 +113,7 @@ def main():
     #TODO: arguments
     orthographic_group.add_argument('--orthographic_extend_scale', type=float, help='Enable orthographic extension, scaling character ngram counts by provided value (multiplicative; recommend ~0.125)')
     orthographic_group.add_argument('--orthographic_extend_n', type=int, default=1, help='Value of n for character ngrams in orthographic extension; must also provide --ortho_extend_scale')
+    orthographic_group.add_argument('--dump_dict', type=str, default='', help='File to dump inferred dictionary to')
     args = parser.parse_args()
 
     if args.supervised is not None:
@@ -265,6 +266,8 @@ def main():
     simbwd = xp.empty((args.batch_size, src_size), dtype=dtype)
     if args.validation is not None:
         simval = xp.empty((len(validation.keys()), z.shape[0]), dtype=dtype)
+    #if args.dump_dict:
+        #dump_simval = xp.empty((src_size, z.shape[0]), dtype=dtype)
 
     best_sim_forward = xp.full(src_size, -100, dtype=dtype)
     src_indices_forward = xp.arange(src_size)
@@ -404,6 +407,7 @@ def main():
                 accuracy = np.mean([1 if nn[i] in validation[src[i]] else 0 for i in range(len(src))])
                 similarity = np.mean([max([simval[i, j].tolist() for j in validation[src[i]]]) for i in range(len(src))])
 
+           
             # Logging
             duration = time.time() - t
             if args.verbose:
@@ -424,6 +428,28 @@ def main():
 
         t = time.time()
         it += 1
+
+
+
+
+
+    if args.dump_dict:
+      batch_size = 500
+      #dump_simval = xp.empty((batch_size, z.shape[0]), dtype=dtype)
+      open(args.dump_dict, 'w').close()
+      for i in range(0,len(xw),batch_size): #TODO: BATCH_SIZE
+        j = min(i + batch_size, len(xw))
+        #xw[i:j].dot(zw.T, out=dump_simval)
+        dump_simval = xw[i:j].dot(zw.T)
+        nn = asnumpy(dump_simval.argmax(axis=1))
+        nn_sim = asnumpy(dump_simval.max(axis=1))
+        with open(args.dump_dict, 'a', encoding=args.encoding, errors='surrogateescape') as f:
+          #translation_scores = sorted({(src_words[i],trg_words[nn[i]]):nn_sim[i] for i in nn}.items(), key=lambda kv: kv[1], reverse=True)
+          translation_scores = sorted({(src_words[i+k],trg_words[nnk]):nn_sim[k] for k,nnk in enumerate(nn)}.items(), key=lambda kv: kv[1], reverse=True)
+          for ((s,t),score) in translation_scores:
+            print('{} {}'.format(s,t),file=f)
+
+
 
     # Write mapped embeddings
     srcfile = open(args.src_output, mode='w', encoding=args.encoding, errors='surrogateescape')
