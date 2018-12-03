@@ -23,6 +23,8 @@ import re
 import sys
 import time
 
+sys.path.insert(0,'./edit-distance-learning')
+import learnedit
 
 def dropout(m, p):
     if p <= 0.0:
@@ -110,10 +112,14 @@ def main():
     self_learning_group.add_argument('-v', '--verbose', action='store_true', help='write log information to stderr at each iteration')
 
     orthographic_group = parser.add_argument_group('orthographic arguments', 'Arguments for controlling use of orthographic (spelling) information')
-    #TODO: arguments
+    #TODO: implement edit dist args
     orthographic_group.add_argument('--orthographic_extend_scale', type=float, help='Enable orthographic extension, scaling character ngram counts by provided value (multiplicative; recommend ~0.125)')
     orthographic_group.add_argument('--orthographic_extend_n', type=int, default=1, help='Value of n for character ngrams in orthographic extension; must also provide --ortho_extend_scale')
     orthographic_group.add_argument('--dump_dict', type=str, default='', help='File to dump inferred dictionary to')
+    orthographic_group.add_argument('--learn_edit_distance', choices=['none','end'], default='none', help='Controls when to infer edit distance, to enable orthographic information use for languages with different scripts.')
+    orthographic_group.add_argument('--edit_distance_save_loc', type=str, default='', help='File to save learned edit distance to.') #TODO: also save sim table?
+    orthographic_group.add_argument('--edit_distance_dict_count', type=int, default=0, help='Number of (max-probability) inferred dictionary entries to use for inferring edit distance.')
+    orthographic_group.add_argument('--edit_distance_load_loc', type=str, default='', help='File to load edit distance from (see learnedit.EditProbability.save) to use during training.') #TODO: instead of loading EP, maybe just the sim table?
     args = parser.parse_args()
 
     if args.supervised is not None:
@@ -363,6 +369,7 @@ def main():
                 for i in range(0, src_size, simfwd.shape[0]):
                     j = min(i + simfwd.shape[0], src_size)
                     xw[i:j].dot(zw[:trg_size].T, out=simfwd[:j-i])
+                    #TODO: if needed, add edit distance factor to simfwd
                     simfwd[:j-i].max(axis=1, out=best_sim_forward[i:j])
                     simfwd[:j-i] -= knn_sim_bwd/2  # Equivalent to the real CSLS scores for NN
                     dropout(simfwd[:j-i], 1 - keep_prob).argmax(axis=1, out=trg_indices_forward[i:j])
@@ -371,10 +378,12 @@ def main():
                     for i in range(0, src_size, simfwd.shape[0]):
                         j = min(i + simfwd.shape[0], src_size)
                         xw[i:j].dot(zw[:trg_size].T, out=simfwd[:j-i])
+                        #TODO: if needed, add edit distance factor to simfwd
                         knn_sim_fwd[i:j] = topk_mean(simfwd[:j-i], k=args.csls_neighborhood, inplace=True)
                 for i in range(0, trg_size, simbwd.shape[0]):
                     j = min(i + simbwd.shape[0], trg_size)
                     zw[i:j].dot(xw[:src_size].T, out=simbwd[:j-i])
+                    #TODO: if needed, add edit distance factor to simbwd
                     simbwd[:j-i].max(axis=1, out=best_sim_backward[i:j])
                     simbwd[:j-i] -= knn_sim_fwd/2  # Equivalent to the real CSLS scores for NN
                     dropout(simbwd[:j-i], 1 - keep_prob).argmax(axis=1, out=src_indices_backward[i:j])
