@@ -13,7 +13,7 @@ chardet=3.0.4=py37_1
 cryptography=2.4.1=py37h1ba5d50_0
 cudatoolkit=9.0=h13b8566_0
 cudnn=7.1.2=cuda9.0_0
-cupy=4.1.0=py36h0ee51e5_0
+#cupy=4.1.0=py36h0ee51e5_0
 docutils=0.14=py37_0
 fastrlock=0.4=py37he6710b0_0
 gensim=3.4.0=py37h14c3975_0
