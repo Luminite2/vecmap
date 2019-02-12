@@ -116,10 +116,10 @@ def main():
     #TODO: make scale a default arg, or narg? for sim, definitely
     orthographic_group.add_argument('--orthographic_extend_scale', type=float, help='Enable orthographic extension, scaling character ngram counts by provided value (multiplicative; recommend ~0.125)')
     #orthographic_group.add_argument('--orthographic_extend_n', type=int, default=1, help='Value of n for character ngrams in orthographic extension; must also provide --orthographic_extend_scale; DEPRECATED')
-    orthographic_group.add_argument('--orthographic_extend_unigram_limit', type=int, default=200, help='Number of unigrams (and, currently, bigrams) to include in character ngram vocabulary; must also provide --orthographic_extend_scale')
+    orthographic_group.add_argument('--orthographic_extend_unigram_limit', type=int, default=100, help='Number of unigrams (and, currently, bigrams) to include in character ngram vocabulary; must also provide --orthographic_extend_scale')
     orthographic_group.add_argument('--orthographic_similarity_scale', type=float, help='Enable orthographic similarity adjustment (edit distance or learned probability), scaling by provided value (multiplicative, recommend TODO)')
     #orthographic_group.add_argument('--orthographic_similarity_k', type=int, default=2 help='Value of k for symmetric delete heuristic for identifying high-similarity pairs; must also provide --orthographic_similarity_scale')
-    orthographic_group.add_argument('--orthographic_similarity_file', type=str, help='TODO')
+    orthographic_group.add_argument('--orthographic_similarity_file', type=str, help='TODO') #TODO: make it so you can create it
     orthographic_group.add_argument('--dump_dict', type=str, default='', help='File to dump inferred dictionary to')
     #orthographic_group.add_argument('--learn_edit_distance', choices=['none','end'], default='none', help='Controls when to infer edit distance, to enable orthographic information use for languages with different scripts.')
     #orthographic_group.add_argument('--edit_distance_save_loc', type=str, default='', help='File to save learned edit distance to.') #TODO: also save sim table?
@@ -168,12 +168,16 @@ def main():
     x = None
     trg_words = None
     z = None
+    orig_dim_src = None
+    orig_dim_trg = None
     if args.orthographic_extend_scale:
       #(src_words, x), (trg_words, z) = embeddings.ortho_read(srcfile, trgfile, args.orthographic_extend_scale, args.orthographic_extend_n, dtype=dtype)
-      (src_words, x), (trg_words, z) = embeddings.ortho_read(srcfile, trgfile, args.orthographic_extend_scale, dtype=dtype, unigram_limit=args.orthographic_extend_unigram_limit)
+      (src_words, x), (trg_words, z), orig_dim_src, orig_dim_trg = embeddings.ortho_read(srcfile, trgfile, args.orthographic_extend_scale, dtype=dtype, unigram_limit=args.orthographic_extend_unigram_limit)
     else:
       src_words, x = embeddings.read(srcfile, dtype=dtype)
       trg_words, z = embeddings.read(trgfile, dtype=dtype)
+      orig_dim_src = x.shape[1]
+      orig_dim_trg = z.shape[1]
 
     # NumPy/CuPy management
     if args.cuda:
@@ -299,6 +303,13 @@ def main():
     keep_prob = args.stochastic_initial
     t = time.time()
     end = not args.self_learning
+    def sim_modify(m, s):
+          if True:
+            #return m + (s * args.orthographic_similarity_scale)
+            return m + (s * args.orthographic_similarity_scale)
+          else:
+            return m * ((1. + s)**args.orthographic_similarity_scale)
+
     while True:
 
         # Increase the keep probability if we have not improve in args.stochastic_interval iterations
@@ -323,9 +334,11 @@ def main():
 
             # TODO xw.dot(wx2, out=xw) and alike not working
             if args.orthographic_extend_scale:
-              print('WARNING: Chopping dims to 300, make this cleaner!')
-              xw = x[:,:300]
-              zw = z[:,:300]
+              #print('WARNING: Chopping dims to 300, make this cleaner!')
+              #xw = x[:,:300]
+              #zw = z[:,:300]
+              xw = x[:,:orig_dim_src]
+              zw = z[:,:orig_dim_trg]
             else:
               xw[:] = x
               zw[:] = z
@@ -368,14 +381,21 @@ def main():
                 xw = xw[:, :args.dim_reduction]
                 zw = zw[:, :args.dim_reduction]
 
+
         # Self-learning
         if end:
             break
         else:
             ortho_sim = None
+            #TODO: add ability to change it to mult
             if args.orthographic_similarity_file and args.orthographic_similarity_scale:
-              ortho_sim = embeddings.load_sparse_csr(args.orthographic_similarity_file) / args.orthographic_similarity_scale
-              ortho_sim = ortho_sim[:src_size,:trg_size]
+              if True: #normal, additive form
+                ortho_sim = embeddings.load_sparse_csr(args.orthographic_similarity_file)# * args.orthographic_similarity_scale
+                ortho_sim = ortho_sim[:src_size,:trg_size]
+              else: #multiplicative
+                ortho_sim = embeddings.load_sparse_csr(args.orthographic_similarity_file)# ** args.orthographic_similarity_scale
+                ortho_sim = ortho_sim[:src_size,:trg_size]
+
             # Update the training dictionary
             if args.direction in ('forward', 'union'):
                 if args.csls_neighborhood > 0:
@@ -393,7 +413,8 @@ def main():
                       #print('ortho_sim: {}'.format(ortho_sim.shape))
                       #print('ortho_sim[i:j]: {}'.format(ortho_sim[i:j].shape))
                       #exit()
-                      simfwd[:j-i] += xp.array(ortho_sim[i:j].toarray())
+                      #simfwd[:j-i] += xp.array(ortho_sim[i:j].toarray())
+                      simfwd[:j-i] = sim_modify(simfwd[:j-i], xp.array(ortho_sim[i:j].toarray()))
                     simfwd[:j-i].max(axis=1, out=best_sim_forward[i:j])
                     simfwd[:j-i] -= knn_sim_bwd/2  # Equivalent to the real CSLS scores for NN
                     dropout(simfwd[:j-i], 1 - keep_prob).argmax(axis=1, out=trg_indices_forward[i:j])
@@ -404,14 +425,16 @@ def main():
                         xw[i:j].dot(zw[:trg_size].T, out=simfwd[:j-i])
                         #TODO: if needed, add edit distance factor to simfwd
                         if ortho_sim is not None:
-                          simfwd[:j-i] += xp.array(ortho_sim[i:j].toarray())
+                          #simfwd[:j-i] += xp.array(ortho_sim[i:j].toarray())
+                          simfwd[:j-i] = sim_modify(simfwd[:j-i], xp.array(ortho_sim[i:j].toarray()))
                         knn_sim_fwd[i:j] = topk_mean(simfwd[:j-i], k=args.csls_neighborhood, inplace=True)
                 for i in range(0, trg_size, simbwd.shape[0]):
                     j = min(i + simbwd.shape[0], trg_size)
                     zw[i:j].dot(xw[:src_size].T, out=simbwd[:j-i])
                     #TODO: if needed, add edit distance factor to simbwd
                     if ortho_sim is not None:
-                      simbwd[:j-i] += xp.array(ortho_sim[:,i:j].toarray().T)
+                      #simbwd[:j-i] += xp.array(ortho_sim[:,i:j].toarray().T)
+                      simbwd[:j-i] = sim_modify(simbwd[:j-i], xp.array(ortho_sim[:,i:j].toarray().T))
                     simbwd[:j-i].max(axis=1, out=best_sim_backward[i:j])
                     simbwd[:j-i] -= knn_sim_fwd/2  # Equivalent to the real CSLS scores for NN
                     dropout(simbwd[:j-i], 1 - keep_prob).argmax(axis=1, out=src_indices_backward[i:j])
@@ -470,21 +493,28 @@ def main():
 
 
 
+    #TODO: make sure ALL ordered!
     if args.dump_dict:
+      translation_scores = []
       batch_size = 500
       #dump_simval = xp.empty((batch_size, z.shape[0]), dtype=dtype)
-      open(args.dump_dict, 'w').close()
+      #open(args.dump_dict, 'w').close()
       for i in range(0,len(xw),batch_size): #TODO: BATCH_SIZE
         j = min(i + batch_size, len(xw))
         #xw[i:j].dot(zw.T, out=dump_simval)
         dump_simval = xw[i:j].dot(zw.T)
         nn = asnumpy(dump_simval.argmax(axis=1))
         nn_sim = asnumpy(dump_simval.max(axis=1))
-        with open(args.dump_dict, 'a', encoding=args.encoding, errors='surrogateescape') as f:
+        translation_scores += list((((src_words[i+k],trg_words[nnk]),nn_sim[k]) for k,nnk in enumerate(nn)))
+        #with open(args.dump_dict, 'a', encoding=args.encoding, errors='surrogateescape') as f:
           #translation_scores = sorted({(src_words[i],trg_words[nn[i]]):nn_sim[i] for i in nn}.items(), key=lambda kv: kv[1], reverse=True)
-          translation_scores = sorted({(src_words[i+k],trg_words[nnk]):nn_sim[k] for k,nnk in enumerate(nn)}.items(), key=lambda kv: kv[1], reverse=True)
-          for ((s,t),score) in translation_scores:
-            print('{} {}'.format(s,t),file=f)
+          #translation_scores = sorted({(src_words[i+k],trg_words[nnk]):nn_sim[k] for k,nnk in enumerate(nn)}.items(), key=lambda kv: kv[1], reverse=True)
+          #for ((s,t),score) in translation_scores:
+          #  print('{} {}'.format(s,t),file=f)
+      with open(args.dump_dict, 'w', encoding=args.encoding, errors='surrogateescape') as f:
+        for ((s,t),score) in sorted(translation_scores, key=lambda kv: kv[1], reverse=True):
+          print('{} {}'.format(s,t),file=f)
+
 
 
 

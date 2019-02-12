@@ -140,7 +140,7 @@ def matches(tmap, w, k):
       cands = cands.union(tmap[d])
   return cands
 
-def similarity_matrix(srcs, trgs, src_word2ind, trg_word2ind,k,ep, src_cutoff=None, trg_cutoff=None):
+def similarity_matrix(srcs, trgs, src_word2ind, trg_word2ind,k,ep, src_cutoff=None, trg_cutoff=None, pairs_out_fname=None, translit_out_fname=None):
   from scipy.sparse import lil_matrix
   from scipy.sparse import csr_matrix
   import math
@@ -157,8 +157,12 @@ def similarity_matrix(srcs, trgs, src_word2ind, trg_word2ind,k,ep, src_cutoff=No
     #trans_src_word2ind = {translit(src):src_word2ind[src] for src in src_word2ind}
   num_sim_evald = 0
   nnz = 0
-  translit_f = open('translit.out','w', encoding='utf-8')
-  cand_f = open('pairs.out', 'w', encoding='utf-8')
+  translit_f = None
+  cand_f = None
+  if translit_out_fname:
+    translit_f = open(translit_out_fname,'w', encoding='utf-8') #translit.out
+  if pairs_out_fname:
+    cand_f = open(pairs_out_fname, 'w', encoding='utf-8') #pairs.out
   for w in srcs:
     #if w == 'bases':
     #  print('found bases!')
@@ -166,7 +170,8 @@ def similarity_matrix(srcs, trgs, src_word2ind, trg_word2ind,k,ep, src_cutoff=No
       continue
     if ep:
       t = translit(w)
-      translit_f.write('{} {}\n'.format(w,t))
+      if translit_f:
+        translit_f.write('{} {}\n'.format(w,t))
       candidates = matches(trgmap,t,k)
       #if w == 'bases':
       #  print('translit: {}'.format(translit(w)))
@@ -174,8 +179,9 @@ def similarity_matrix(srcs, trgs, src_word2ind, trg_word2ind,k,ep, src_cutoff=No
     else:
       candidates = matches(trgmap,w,k)
     for cand in candidates:
-      if ep:
+      if cand_f:
         cand_f.write('{} {}\n'.format(w,cand))
+      if ep:
         sim = ep.score(w,cand)
         if sim != 0:
           sim = math.log(sim)/max(len(w),len(cand))

@@ -38,9 +38,11 @@ def read(file, threshold=0, vocabulary=None, dtype='float'):
 def ortho_read(s_file, t_file, scale, char_n=1, threshold=0, s_vocab=None, t_vocab=None, dtype='float', unigram_limit=None):
   s_words, s_matrix = read(s_file, threshold, s_vocab, dtype)
   t_words, t_matrix = read(t_file, threshold, t_vocab, dtype)
+  orig_dim_s = s_matrix.shape[1]
+  orig_dim_t = t_matrix.shape[1]
 
   s_matrix, t_matrix = orthographic.extend_bilingual_embeddings(s_words, s_matrix, t_words, t_matrix, scale, char_n, dtype, unigram_limit=unigram_limit)
-  return (s_words, s_matrix), (t_words, t_matrix)
+  return (s_words, s_matrix), (t_words, t_matrix), orig_dim_s, orig_dim_t
 
 def write(words, matrix, file):
     m = asnumpy(matrix)
@@ -121,7 +123,10 @@ def vocab_with_indices(l1, l2, **kwargs):
 def create_and_save_similarity_matrix(l1,l2,k,fpath,ep,src_cutoff=None,trg_cutoff=None):
   srcs, _, trgs, _, src_word2ind, trg_word2ind = vocab_with_indices(l1,l2)
 
-  simmat = orthographic.similarity_matrix(srcs,trgs,src_word2ind,trg_word2ind,k,ep,src_cutoff=src_cutoff,trg_cutoff=trg_cutoff)
+  #TODO: remove outfile stuff
+  pairs_out_fname = 'similarity_matrices/{}-{}.simk{}.pairs'.format(l1,l2,k)
+  translit_out_fname = 'similarity_matrices/{}-{}.simk{}.translit'.format(l1,l2,k)
+  simmat = orthographic.similarity_matrix(srcs,trgs,src_word2ind,trg_word2ind,k,ep,src_cutoff=src_cutoff,trg_cutoff=trg_cutoff,pairs_out_fname=pairs_out_fname,translit_out_fname=translit_out_fname) #pairs_out_fname, translit_out_fname
   save_sparse_csr(fpath, simmat)
   return simmat
 
